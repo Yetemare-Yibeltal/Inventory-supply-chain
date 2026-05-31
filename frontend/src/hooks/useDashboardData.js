@@ -1,43 +1,74 @@
 import { useQueries } from "@tanstack/react-query";
-import API from "../services/api";z
-
-const dashboardQueries = [
-  {
-    queryKey: ["products"],
-    queryFn: () => API.get("/products").then((res) => res.data),
-  },
-  {
-    queryKey: ["categories"],
-    queryFn: () => API.get("/categories").then((res) => res.data),
-  },
-  {
-    queryKey: ["purchase-orders"],
-    queryFn: () => API.get("/purchase-orders").then((res) => res.data),
-  },
-];
+import API from "../services/api";
 
 const useDashboardData = () => {
-  const results = useQueries({ queries: dashboardQueries });
+  // Parallel multi-stream cache execution layer configuration
+  const results = useQueries({
+    queries: [
+      {
+        queryKey: ["products"],
+        queryFn: async () => {
+          const res = await API.get("/products");
+          return res.data;
+        },
+        staleTime: 3 * 60 * 1000, // 3 minutes analytical freshness data window
+        keepPreviousData: true,
+      },
+      {
+        queryKey: ["categories"],
+        queryFn: async () => {
+          const res = await API.get("/categories");
+          return res.data;
+        },
+        staleTime: 5 * 60 * 1000,
+      },
+      {
+        queryKey: ["purchase-orders"],
+        queryFn: async () => {
+          const res = await API.get("/purchase-orders");
+          return res.data;
+        },
+        staleTime: 2 * 60 * 1000,
+      },
+    ],
+  });
 
+  // Synchronize loading and failure metrics across network channels
   const isLoading = results.some((result) => result.isLoading);
-  const error = results.find((result) => result.error);
+  const isRefetching = results.some((result) => result.isRefetching);
+  const errorInstance = results.find((result) => result.error);
 
-  const [products, categories, purchaseOrders] = results.map(
+  const [products = [], categories = [], purchaseOrders = []] = results.map(
     (result) => result.data || [],
   );
 
-  if (isLoading) return { loading: true, error: null, data: null };
-  if (error) return { loading: false, error: error.error, data: null };
+  if (isLoading) {
+    return { loading: true, refetching: false, error: null, data: null };
+  }
 
-  // Compute dashboard metrics
+  if (errorInstance) {
+    return {
+      loading: false,
+      refetching: false,
+      error: errorInstance.error,
+      data: null,
+    };
+  }
+
+  // Pipeline Metric 1: Absolute Total Counts
   const totalProducts = products.length;
+
+  // Pipeline Metric 2: Inventory Safety Critical Reorder Check
   const lowStockCount = products.filter(
-    (p) => p.quantityOnHand <= p.reorderPoint,
+    (p) => (p.quantityOnHand ?? 0) <= (p.reorderPoint ?? 0),
   ).length;
+
+  // Pipeline Metric 3: Active Document Operational Pipeline Monitoring
   const pendingOrdersCount = purchaseOrders.filter(
     (po) => po.status === "PENDING",
   ).length;
 
+  // Pipeline Metric 4: Category Distribution Vector Mapping
   const categoryStats = Object.entries(
     products.reduce((acc, p) => {
       const catName = p.category?.name || "Uncategorized";
@@ -46,15 +77,19 @@ const useDashboardData = () => {
     }, {}),
   ).map(([name, value]) => ({ name, value }));
 
+  // Pipeline Metric 5: Fulfillment Status Aggregate Breakdowns
   const statusStats = Object.entries(
     purchaseOrders.reduce((acc, po) => {
-      acc[po.status] = (acc[po.status] || 0) + 1;
+      if (po.status) {
+        acc[po.status] = (acc[po.status] || 0) + 1;
+      }
       return acc;
     }, {}),
   ).map(([name, value]) => ({ name, value }));
 
+  // Pipeline Metric 6: High Priority Low Stock Alerts (Top 5 Rows)
   const recentLowStock = products
-    .filter((p) => p.quantityOnHand <= p.reorderPoint)
+    .filter((p) => (p.quantityOnHand ?? 0) <= (p.reorderPoint ?? 0))
     .slice(0, 5)
     .map((p) => ({
       name: p.name,
@@ -63,17 +98,19 @@ const useDashboardData = () => {
       reorderPoint: p.reorderPoint,
     }));
 
-  const recentPurchaseOrders = purchaseOrders
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  // Pipeline Metric 7: Reverse Chronological Ledger Stream (Top 5 Rows)
+  const recentPurchaseOrders = [...purchaseOrders]
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
     .slice(0, 5)
     .map((po) => ({
       poNumber: po.poNumber,
       supplier: po.supplier?.name || "Unknown",
-      date: new Date(po.createdAt).toLocaleDateString(),
-      totalAmount: po.totalAmount,
-      status: po.status,
+      date: po.createdAt ? new Date(po.createdAt).toLocaleDateString() : "N/A",
+      totalAmount: po.totalAmount || 0,
+      status: po.status || "UNKNOWN",
     }));
 
+  // Pipeline Metric 8: Top Revenue Items Matrix Execution Loop
   const productSales = {};
   purchaseOrders
     .filter((po) => po.status === "RECEIVED")
@@ -82,7 +119,10 @@ const useDashboardData = () => {
       const name = item.product?.name || "Unknown";
       const qty = item.quantity || 0;
       const revenue = qty * (item.unitPrice || 0);
-      if (!productSales[name]) productSales[name] = { soldQty: 0, revenue: 0 };
+
+      if (!productSales[name]) {
+        productSales[name] = { soldQty: 0, revenue: 0 };
+      }
       productSales[name].soldQty += qty;
       productSales[name].revenue += revenue;
     });
@@ -107,7 +147,12 @@ const useDashboardData = () => {
     topProducts,
   };
 
-  return { loading: false, error: null, data: dashboardData };
+  return {
+    loading: false,
+    refetching: isRefetching,
+    error: null,
+    data: dashboardData,
+  };
 };
 
 export default useDashboardData;
