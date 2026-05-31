@@ -7,11 +7,13 @@ const PageTransition = ({ children }) => {
   const [transitionStage, setTransitionStage] = useState('fadeIn')
 
   useEffect(() => {
+    // Initiate cross-fade stage down sequence
     setTransitionStage('fadeOut')
+
     const timer = setTimeout(() => {
       setDisplayChildren(children)
       setTransitionStage('fadeIn')
-    }, 250) // half of total animation time
+    }, 250) // Synchronized with half of total Tailwind animation timing window
 
     return () => clearTimeout(timer)
   }, [location, children])
@@ -19,11 +21,11 @@ const PageTransition = ({ children }) => {
   return (
     <div
       className={`
-        transition-all duration-500 ease-in-out
+        transition-all duration-500 ease-in-out transform-gpu
         ${
           transitionStage === 'fadeIn'
-            ? 'opacity-100 translate-y-0'
-            : 'opacity-0 -translate-y-2'
+            ? 'opacity-100 translate-y-0 filter blur-0'
+            : 'opacity-0 -translate-y-2 filter blur-sm'
         }
       `}
     >
@@ -33,3 +35,5 @@ const PageTransition = ({ children }) => {
 }
 
 export default PageTransition
+
+
