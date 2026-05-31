@@ -4,13 +4,29 @@ const Product = require("../models/Product");
 
 // Helper to generate unique PO number
 const generatePONumber = async () => {
-  const count = await PurchaseOrder.countDocuments();
   const date = new Date();
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  const seq = String(count + 1).padStart(4, "0");
-  return `PO-${year}${month}${day}-${seq}`;
+  const dateString = `${year}${month}${day}`;
+
+  // Find the last order created to determine the next sequence
+  const lastOrder = await PurchaseOrder.findOne({})
+    .sort({ createdAt: -1 })
+    .select("poNumber");
+
+  let nextSeq = 1;
+
+  if (lastOrder && lastOrder.poNumber) {
+    const parts = lastOrder.poNumber.split("-");
+    // parts[1] is the date (YYYYMMDD), parts[2] is the sequence (0001)
+    if (parts.length > 2 && parts[1] === dateString) {
+      nextSeq = parseInt(parts[2], 10) + 1;
+    }
+  }
+
+  const seq = String(nextSeq).padStart(4, "0");
+  return `PO-${dateString}-${seq}`;
 };
 
 // @desc    Create a purchase order

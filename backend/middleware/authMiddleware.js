@@ -25,10 +25,22 @@ const protect = async (req, res, next) => {
 // Grant access to specific roles
 const authorize = (...roles) => {
   return (req, res, next) => {
+    // 1. Check if the user has a role assigned at all
+    if (!req.user.role) {
+      return res
+        .status(403)
+        .json({
+          message: "Your account has no assigned role. Access prohibited.",
+        });
+    }
+
+    // 2. Check if the assigned role is authorized
     if (!roles.includes(req.user.role)) {
       return res
         .status(403)
-        .json({ message: `Role ${req.user.role} not authorized` });
+        .json({
+          message: `Access Denied: The '${req.user.role}' role cannot perform this action.`,
+        });
     }
     next();
   };
