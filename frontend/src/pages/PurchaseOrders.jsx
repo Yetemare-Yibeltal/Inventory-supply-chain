@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import API from '../services/api'
 import useSuppliers from '../hooks/useSuppliers'
 import useProductsSimple from '../hooks/useProductsSimple'
@@ -45,7 +45,7 @@ const PurchaseOrders = () => {
   const { products } = useProductsSimple()
   const { canCreate, canUpdate, canDelete } = usePermissions()
 
-  const fetchPOs = async () => {
+  const fetchPOs = useCallback(async () => {
     try {
       const res = await API.get('/purchase-orders')
       setPurchaseOrders(res.data)
@@ -54,11 +54,11 @@ const PurchaseOrders = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchPOs()
-  }, [])
+  }, [fetchPOs])
 
   useEffect(() => {
     const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0)
@@ -164,7 +164,7 @@ const PurchaseOrders = () => {
       paddingBottom: '2px',
       color: '#e5e7eb',
       boxShadow: state.isFocused ? '0 0 0 1px rgba(99, 102, 241, 0.2)' : 'none',
-      '&:hover': { border堅olor: '#4b5563' }
+      '&:hover': { borderColor: '#4b5563' }
     }),
     menu: provided => ({
       ...provided,
