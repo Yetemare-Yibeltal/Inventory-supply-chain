@@ -8,6 +8,8 @@ const Categories = () => {
   const [showModal, setShowModal] = useState(false)
   const [editingCat, setEditingCat] = useState(null)
   const [formData, setFormData] = useState({ name: '', description: '' })
+
+  // Custom API Access Tokens mapped to your system hooks
   const { canCreate, canUpdate, canDelete } = usePermissions()
 
   const fetchCategories = async () => {
@@ -15,7 +17,7 @@ const Categories = () => {
       const res = await API.get('/categories')
       setCategories(res.data)
     } catch (err) {
-      console.error(err)
+      console.error('Data sync error:', err)
     } finally {
       setLoading(false)
     }
@@ -48,17 +50,24 @@ const Categories = () => {
       setShowModal(false)
       fetchCategories()
     } catch (err) {
-      alert(err.response?.data?.message || 'Error saving category')
+      alert(
+        err.response?.data?.message || 'Error processing network array packet'
+      )
     }
   }
 
   const handleDelete = async id => {
-    if (window.confirm('Delete this category?')) {
+    if (
+      window.confirm('Execute hard-deletion on this architectural category?')
+    ) {
       try {
         await API.delete(`/categories/${id}`)
         fetchCategories()
       } catch (err) {
-        alert('Delete failed (maybe has products)')
+        alert(
+          err.response?.data?.message ||
+            'Purge script rejected by server security policy.'
+        )
       }
     }
   }
@@ -78,7 +87,7 @@ const Categories = () => {
 
   return (
     <div className='min-h-screen bg-[#0d1117] text-gray-100 p-6 font-sans relative overflow-hidden'>
-      {/* Decorative Ambient Canvas Lighting */}
+      {/* Background Canvas Glow */}
       <div className='absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-600/10 blur-[100px] pointer-events-none' />
 
       <div className='relative max-w-7xl mx-auto z-10'>
@@ -93,7 +102,8 @@ const Categories = () => {
             </p>
           </div>
 
-          {canCreate && (
+          {/* Create Button with Access State feedback */}
+          {canCreate ? (
             <button
               onClick={openAddModal}
               className='bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-500/10 transition-all duration-200 active:scale-[0.98] flex items-center gap-2'
@@ -113,6 +123,26 @@ const Categories = () => {
               </svg>
               Create Category Node
             </button>
+          ) : (
+            <div
+              className='text-xs text-gray-500 bg-gray-900/40 border border-gray-800 px-4 py-2.5 rounded-xl select-none flex items-center gap-2 cursor-not-allowed'
+              title='Your security clearance token restricts element creation.'
+            >
+              <svg
+                className='w-3.5 h-3.5 text-gray-600'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='2'
+                  d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'
+                />
+              </svg>
+              Creation Privileges Revoked
+            </div>
           )}
         </div>
 
@@ -158,32 +188,49 @@ const Categories = () => {
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-center text-sm font-medium'>
                       <div className='flex items-center justify-center gap-3'>
-                        <button
-                          disabled={!canUpdate}
-                          onClick={
-                            canUpdate ? () => openEditModal(c) : undefined
-                          }
-                          className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200 ${
+                        {/* Modify Controller Action with Wrapper for Cursor Override */}
+                        <div
+                          className={!canUpdate ? 'cursor-not-allowed' : ''}
+                          title={
                             !canUpdate
-                              ? 'border-gray-800/60 text-gray-600 cursor-not-allowed opacity-40'
-                              : 'border-indigo-500/20 text-indigo-400 bg-indigo-500/5 hover:bg-indigo-500/10 hover:border-indigo-500/40'
-                          }`}
-                        >
-                          Modify
-                        </button>
-                        <button
-                          disabled={!canDelete}
-                          onClick={
-                            canDelete ? () => handleDelete(c._id) : undefined
+                              ? 'Insufficient cryptographic permissions to write to this node'
+                              : 'Modify configuration parameter stacks'
                           }
-                          className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200 ${
-                            !canDelete
-                              ? 'border-gray-800/60 text-gray-600 cursor-not-allowed opacity-40'
-                              : 'border-rose-500/20 text-rose-400 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-500/40'
-                          }`}
                         >
-                          Purge
-                        </button>
+                          <button
+                            disabled={!canUpdate}
+                            onClick={() => openEditModal(c)}
+                            className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200 ${
+                              !canUpdate
+                                ? 'border-gray-800/40 text-gray-600 bg-gray-900/20 opacity-30 pointer-events-none'
+                                : 'border-indigo-500/20 text-indigo-400 bg-indigo-500/5 hover:bg-indigo-500/10 hover:border-indigo-500/40'
+                            }`}
+                          >
+                            Modify
+                          </button>
+                        </div>
+
+                        {/* Purge Controller Action with Wrapper for Cursor Override */}
+                        <div
+                          className={!canDelete ? 'cursor-not-allowed' : ''}
+                          title={
+                            !canDelete
+                              ? 'Insufficient cryptographic permissions to prune database entities'
+                              : 'Execute system-level table element drop'
+                          }
+                        >
+                          <button
+                            disabled={!canDelete}
+                            onClick={() => handleDelete(c._id)}
+                            className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200 ${
+                              !canDelete
+                                ? 'border-gray-800/40 text-gray-600 bg-gray-900/20 opacity-30 pointer-events-none'
+                                : 'border-rose-500/20 text-rose-400 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-500/40'
+                            }`}
+                          >
+                            Purge
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -219,7 +266,7 @@ const Categories = () => {
         </div>
       </div>
 
-      {/* Modern High-End Overlay Category Modal Window */}
+      {/* Category Overlay Form Modal */}
       {showModal && (
         <div className='fixed inset-0 bg-[#0d1117]/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn'>
           <div className='relative w-full max-w-md bg-[#161b22] border border-gray-800 rounded-2xl shadow-2xl p-6 overflow-hidden'>
@@ -285,15 +332,3 @@ const Categories = () => {
 }
 
 export default Categories
-
-/* 
-================================================================================
-COMMIT MESSAGE FOR THIS FILE:
-================================================================================
-feat(categories): transform category data hub to advanced cyber dark layout
-
-Refactors structural tables to an enterprise-grade dark UI board with 
-frosted backdrop visual parameters, refined authorization button control matrix 
-safeguards, unified color states, and polished dynamic loading animations.
-================================================================================
-*/
