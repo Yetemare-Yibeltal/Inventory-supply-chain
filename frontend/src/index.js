@@ -1,19 +1,26 @@
 import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
 import App from "./App";
 import Spinner from "./components/common/Spinner";
 
-const queryClient = new QueryClient();
+// Select the DOM mounting landing node element safely
+const rootElement = document.getElementById("root");
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+if (!rootElement) {
+  throw new Error(
+    'Fatal System Mount Exception: DOM node element container binding with ID "#root" could not be located.',
+  );
+}
+
+const root = ReactDOM.createRoot(rootElement);
+
+// Render clean, optimized context tree (QueryProvider and AuthProvider cascade inside App)
 root.render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <Suspense fallback={<Spinner />}>
-        <App />
-      </Suspense>
-    </QueryClientProvider>
+    <Suspense fallback={<Spinner />}>
+      <App />
+    </Suspense>
   </React.StrictMode>,
 );
+
