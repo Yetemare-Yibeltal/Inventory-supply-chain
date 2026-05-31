@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import API from '../services/api'
 import useSuppliers from '../hooks/useSuppliers'
+import ProcurementStats from '../components/Dashboard/ProcurementStats'
+
 import useProductsSimple from '../hooks/useProductsSimple'
-// Updated path: Adjust 'Dashboard' if your file is in 'common' or elsewhere
+// Updated import path
 import ProcurementStats from '../components/Dashboard/ProcurementStats'
 import Select from 'react-select'
 import { usePermissions } from '../hooks/usePermissions'
@@ -229,7 +231,7 @@ const PurchaseOrders = () => {
 
         <ProcurementStats orders={purchaseOrders} />
 
-        {/* Table Rendering Logic remains the same ... */}
+        {/* ... table rendering code remains the same ... */}
       </div>
     </div>
   )
