@@ -1,33 +1,46 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "unified-3d-system",
   "private": true,
-  "dependencies": {
-    "@tanstack/react-query": "^5.100.9",
-    "@tanstack/react-query-devtools": "^5.100.9",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^13.5.0",
-    "autoprefixer": "^10.5.0",
-    "axios": "^1.15.2",
-    "postcss": "^8.5.12",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
-    "react-icons": "^5.6.0",
-    "react-router-dom": "^7.14.2",
-    "react-scripts": "5.0.1",
-    "react-select": "^5.10.2",
-    "recharts": "^3.8.1",
-    "tailwindcss": "^3.4.19",
-    "web-vitals": "^2.1.4"
-  },
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "analyze": "npm run build && npx source-map-explorer 'build/static/js/*.js'"
+    "analyze": "npm run build && npx source-map-explorer 'build/static/js/*.js'",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.14.2",
+    "@tanstack/react-query": "^5.100.9",
+    "@tanstack/react-query-devtools": "^5.100.9",
+    "@react-three/drei": "^9.105.0",
+    "@react-three/fiber": "^8.16.0",
+    "three": "^0.164.0",
+    "framer-motion": "^11.1.0",
+    "lucide-react": "^0.378.0",
+    "axios": "^1.15.2",
+    "react-icons": "^5.6.0",
+    "react-select": "^5.10.2",
+    "recharts": "^3.8.1",
+    "web-vitals": "^2.1.4",
+    "react-scripts": "5.0.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.2.11",
+    "tailwindcss": "^3.4.19",
+    "postcss": "^8.5.12",
+    "autoprefixer": "^10.4.19",
+    "tailwind-merge": "^2.3.0",
+    "source-map-explorer": "^2.5.3",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1"
   },
   "eslintConfig": {
     "extends": [
@@ -46,67 +59,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "source-map-explorer": "^2.5.3"
-  }
-  
-}
-{
-  "name": "advanced-3d-experience",
-  "private": true,
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@react-three/drei": "^9.105.0",
-    "@react-three/fiber": "^8.16.0",
-    "framer-motion": "^11.1.0",
-    "lucide-react": "^0.378.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "three": "^0.164.0"
-  },
-  "devDependencies": {
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.38",
-    "tailwind-merge": "^2.3.0",
-    "tailwindcss": "^3.4.3",
-    "vite": "^5.2.11"
-  }
-}
-{
-  "name": "enterprise-3d-inventory-system",
-  "private": true,
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@react-three/drei": "^9.105.0",
-    "@react-three/fiber": "^8.16.0",
-    "framer-motion": "^11.1.0",
-    "lucide-react": "^0.378.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "three": "^0.164.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.3",
-    "vite": "^5.2.11"
   }
 }
