@@ -1,81 +1,84 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import API from '../services/api'
 import useCategories from '../hooks/useCategories'
 import useSuppliers from '../hooks/useSuppliers'
 import { usePermissions } from '../hooks/usePermissions'
 import ProductSkeleton from '../components/Skeleton/ProductSkeleton'
 
+const INITIAL_FORM_STATE = {
+  name: '',
+  sku: '',
+  price: '',
+  quantityOnHand: '',
+  reorderPoint: '',
+  category: '',
+  supplier: ''
+}
+
 const Products = () => {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
-  const [formData, setFormData] = useState({
-    name: '',
-    sku: '',
-    price: '',
-    quantityOnHand: '',
-    reorderPoint: '',
-    category: '',
-    supplier: ''
-  })
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE)
 
   const { categories } = useCategories()
   const { suppliers } = useSuppliers()
   const { canCreate, canUpdate, canDelete } = usePermissions()
 
-  const fetchProducts = async () => {
+  // Wrapped in useCallback to prevent unneeded redeclarations
+  const fetchProducts = useCallback(async () => {
     try {
       const res = await API.get('/products')
       setProducts(res.data)
     } catch (err) {
-      console.error(err)
+      console.error('Failed to resolve stock manifests:', err)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchProducts()
-  }, [])
+  }, [fetchProducts])
 
   const openAddModal = () => {
     setEditingProduct(null)
-    setFormData({
-      name: '',
-      sku: '',
-      price: '',
-      quantityOnHand: '',
-      reorderPoint: '',
-      category: '',
-      supplier: ''
-    })
+    setFormData(INITIAL_FORM_STATE)
     setShowModal(true)
   }
 
   const openEditModal = p => {
     setEditingProduct(p)
     setFormData({
-      name: p.name,
-      sku: p.sku,
-      price: p.price,
-      quantityOnHand: p.quantityOnHand,
-      reorderPoint: p.reorderPoint,
-      category: p.category?._id || p.category,
-      supplier: p.supplier?._id || p.supplier
+      name: p.name || '',
+      sku: p.sku || '',
+      price: p.price ?? '',
+      quantityOnHand: p.quantityOnHand ?? '',
+      reorderPoint: p.reorderPoint ?? '',
+      category: p.category?._id || p.category || '',
+      supplier: p.supplier?._id || p.supplier || ''
     })
     setShowModal(true)
   }
 
-  const handleChange = e =>
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+  const handleChange = e => {
+    const { name, value, type } = e.target
+    // Automatically sanitize and parse numeric inputs safely
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'number' ? (value === '' ? '' : Number(value)) : value
+    }))
+  }
 
   const handleSubmit = async e => {
     e.preventDefault()
     try {
-      if (editingProduct)
+      if (editingProduct) {
         await API.put(`/products/${editingProduct._id}`, formData)
-      else await API.post('/products', formData)
+      } else {
+        await API.post('/products', formData)
+      }
       setShowModal(false)
       fetchProducts()
     } catch (err) {
@@ -172,7 +175,10 @@ const Products = () => {
                         {p.sku}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-right font-mono text-emerald-400 font-medium'>
-                        Br {p.price?.toFixed(2)}
+                        Br{' '}
+                        {typeof p.price === 'number'
+                          ? p.price.toFixed(2)
+                          : '0.00'}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-right font-mono'>
                         <span
