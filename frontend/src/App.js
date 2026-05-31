@@ -1,10 +1,10 @@
+import React, { lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
-import { lazy, Suspense } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import QueryProvider from "./components/QueryProvider";
 import Login from "./pages/auth/Login";
@@ -13,7 +13,7 @@ import Layout from "./components/Layout/Layout";
 import PrivateRoute from "./components/common/PrivateRoute";
 import Spinner from "./components/common/Spinner";
 
-// Lazy loaded components
+// Lazy-loaded high-performance core dashboard panels
 const LazyDashboard = lazy(() => import("./pages/Dashboard"));
 const LazyProducts = lazy(() => import("./pages/Products"));
 const LazyCategories = lazy(() => import("./pages/Categories"));
@@ -27,74 +27,34 @@ function App() {
       <QueryProvider>
         <Router>
           <Routes>
-            {/* Public Auth routes */}
+            {/* Public Authentication Channels */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Protected routes with Layout */}
+            {/* Protected Enterprise Supply Chain Routing Domains */}
             <Route element={<PrivateRoute />}>
-              <Route element={<Layout />}>
-                <Route
-                  path="/"
-                  element={
-                    <Suspense fallback={<Spinner />}>
-                      <LazyDashboard />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <Suspense fallback={<Spinner />}>
-                      <LazyDashboard />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/products"
-                  element={
-                    <Suspense fallback={<Spinner />}>
-                      <LazyProducts />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/categories"
-                  element={
-                    <Suspense fallback={<Spinner />}>
-                      <LazyCategories />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/suppliers"
-                  element={
-                    <Suspense fallback={<Spinner />}>
-                      <LazySuppliers />
-                    </Suspense>
-                  }
-                />
+              <Route
+                element={
+                  <Suspense fallback={<Spinner />}>
+                    <Layout />
+                  </Suspense>
+                }
+              >
+                <Route path="/" element={<LazyDashboard />} />
+                <Route path="/dashboard" element={<LazyDashboard />} />
+                <Route path="/products" element={<LazyProducts />} />
+                <Route path="/categories" element={<LazyCategories />} />
+                <Route path="/suppliers" element={<LazySuppliers />} />
                 <Route
                   path="/purchase-orders"
-                  element={
-                    <Suspense fallback={<Spinner />}>
-                      <LazyPurchaseOrders />
-                    </Suspense>
-                  }
+                  element={<LazyPurchaseOrders />}
                 />
-                <Route
-                  path="/low-stock"
-                  element={
-                    <Suspense fallback={<Spinner />}>
-                      <LazyLowStock />
-                    </Suspense>
-                  }
-                />
+                <Route path="/low-stock" element={<LazyLowStock />} />
               </Route>
             </Route>
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" />} />
+            {/* Universal Fallback Trapping Boundary */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
       </QueryProvider>
@@ -103,3 +63,4 @@ function App() {
 }
 
 export default App;
+
