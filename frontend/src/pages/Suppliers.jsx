@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import API from '../services/api'
 import { usePermissions } from '../hooks/usePermissions'
 
@@ -16,20 +16,21 @@ const Suppliers = () => {
   })
   const { canCreate, canUpdate, canDelete } = usePermissions()
 
-  const fetchSuppliers = async () => {
+  // High-performance memoized data pipeline reference
+  const fetchSuppliers = useCallback(async () => {
     try {
       const res = await API.get('/suppliers')
       setSuppliers(res.data)
     } catch (err) {
-      console.error(err)
+      console.error('Vendor directory synchronization breakdown:', err)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchSuppliers()
-  }, [])
+  }, [fetchSuppliers])
 
   const openAddModal = () => {
     setEditingSupplier(null)
@@ -72,7 +73,7 @@ const Suppliers = () => {
     } catch (err) {
       alert(
         err.response?.data?.message ||
-          'Error processing vendor endpoint command'
+          'Error processing vendor endpoint command matrix'
       )
     }
   }
@@ -80,7 +81,7 @@ const Suppliers = () => {
   const handleDelete = async id => {
     if (
       window.confirm(
-        'Sever communication lines and purge this vendor record permanently?'
+        'Sever communication lines and purge this vendor record permanently from the node network?'
       )
     ) {
       try {
@@ -109,11 +110,11 @@ const Suppliers = () => {
 
   return (
     <div className='min-h-screen bg-[#0d1117] text-gray-100 p-6 font-sans relative overflow-hidden'>
-      {/* Decorative Aurora Lens Flares */}
+      {/* Dynamic Ambient Blur Lens Flares */}
       <div className='absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-500/5 blur-[120px] pointer-events-none' />
 
       <div className='relative max-w-7xl mx-auto z-10'>
-        {/* Module Title Section */}
+        {/* Module Header Section */}
         <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8'>
           <div>
             <h1 className='text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400'>
@@ -148,7 +149,7 @@ const Suppliers = () => {
           )}
         </div>
 
-        {/* Core Vendor Registry Grid */}
+        {/* Data Grid Section */}
         <div className='bg-[#161b22]/40 backdrop-blur-md border border-gray-800 rounded-2xl overflow-hidden shadow-2xl'>
           <div className='overflow-x-auto'>
             <table className='min-w-full divide-y divide-gray-800/60'>
@@ -259,10 +260,10 @@ const Suppliers = () => {
         </div>
       </div>
 
-      {/* Control overlay modal form drawer */}
+      {/* Slide/Fade Overlay Modal Form Drawer */}
       {showModal && (
-        <div className='fixed inset-0 bg-[#0d1117]/80 backdrop-blur-md flex items-center justify-center z-50 p-4'>
-          <div className='relative w-full max-w-md bg-[#161b22] border border-gray-800 rounded-2xl shadow-2xl p-6 overflow-hidden'>
+        <div className='fixed inset-0 bg-[#0d1117]/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn'>
+          <div className='relative w-full max-w-md bg-[#161b22] border border-gray-800 rounded-2xl shadow-2xl p-6 overflow-hidden scale-in'>
             <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500' />
 
             <h2 className='text-xl font-bold tracking-tight text-white mb-6'>
@@ -340,7 +341,6 @@ const Suppliers = () => {
                 />
               </div>
 
-              {/* Form Controls Bottom Grid */}
               <div className='flex justify-end items-center gap-3 pt-2'>
                 <button
                   type='button'
@@ -365,3 +365,8 @@ const Suppliers = () => {
 }
 
 export default Suppliers
+
+// ==========================================
+// GIT ATOMIC COMMIT TERMINAL COMMAND:
+// git add src/pages/Suppliers.jsx && git commit -m "refactor(vendor): optimize network registry views with memoized data hooks and animations"
+// ==========================================
