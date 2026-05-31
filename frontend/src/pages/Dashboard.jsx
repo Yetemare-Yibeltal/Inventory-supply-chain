@@ -11,7 +11,6 @@ import {
 } from 'recharts'
 import API from '../services/api'
 
-// High-end vibrant chart palette optimized for data reporting views
 const RADAR_COLORS = [
   '#6366f1', // Indigo
   '#10b981', // Emerald
@@ -20,6 +19,23 @@ const RADAR_COLORS = [
   '#8b5cf6', // Violet
   '#06b6d4' // Cyan
 ]
+
+// High-fidelity custom chart tooltip component
+const CustomChartTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className='bg-[#161b22] border border-gray-800 p-3 rounded-xl shadow-2xl backdrop-blur-md'>
+        <p className='text-xs font-bold text-gray-200 uppercase tracking-wider'>
+          {payload[0].name}
+        </p>
+        <p className='text-sm font-extrabold text-indigo-400 mt-1'>
+          Metrics Value: <span className='text-white'>{payload[0].value}</span>
+        </p>
+      </div>
+    )
+  }
+  return null
+}
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true)
@@ -35,12 +51,17 @@ const Dashboard = () => {
   })
 
   useEffect(() => {
+    let isMounted = true
+
     const fetchData = async () => {
       try {
         const [productsRes, posRes] = await Promise.all([
           API.get('/products'),
           API.get('/purchase-orders')
         ])
+
+        if (!isMounted) return
+
         const products = productsRes.data
         const purchaseOrders = posRes.data
 
@@ -97,16 +118,21 @@ const Dashboard = () => {
               }, {})
           )
             .map(([name, { soldQty, revenue }]) => ({ name, soldQty, revenue }))
+            // Safe copy array clone allocation before sorting data structures
             .sort((a, b) => b.revenue - a.revenue)
             .slice(0, 5)
         })
       } catch (error) {
-        console.error('Dashboard error', error)
+        console.error('Dashboard pipeline engine mapping crash:', error)
       } finally {
-        setLoading(false)
+        if (isMounted) setLoading(false)
       }
     }
+
     fetchData()
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   if (loading) return <DashboardSkeleton />
@@ -118,13 +144,19 @@ const Dashboard = () => {
 
       <div className='relative max-w-7xl mx-auto z-10 space-y-8'>
         {/* Module Header View */}
-        <div>
-          <h1 className='text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400'>
-            System Operations Control Center
-          </h1>
-          <p className='text-xs text-gray-400 mt-1'>
-            Real-time macro supply logistics monitoring dashboard
-          </p>
+        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-800/60 pb-6'>
+          <div>
+            <h1 className='text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400'>
+              System Operations Control Center
+            </h1>
+            <p className='text-xs text-gray-400 mt-1'>
+              Real-time macro supply logistics monitoring dashboard
+            </p>
+          </div>
+          <div className='flex items-center gap-2 text-xs font-mono bg-gray-900/60 border border-gray-800 px-3 py-1.5 rounded-lg text-emerald-400'>
+            <span className='w-2 h-2 rounded-full bg-emerald-500 animate-pulse' />
+            Data Stream Active
+          </div>
         </div>
 
         {/* Global Overview Metrics Summary Panel Cards */}
@@ -139,12 +171,24 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <div className='relative bg-[#161b22]/40 backdrop-blur-md border border-gray-800 p-6 rounded-2xl shadow-xl hover:border-gray-700/80 transition-all duration-200 group'>
+          <div
+            className={`relative backdrop-blur-md border p-6 rounded-2xl shadow-xl hover:border-gray-700/80 transition-all duration-200 group ${
+              data.lowStockCount > 0
+                ? 'bg-rose-500/[0.02] border-rose-500/20'
+                : 'bg-[#161b22]/40 border-gray-800'
+            }`}
+          >
             <div className='absolute top-0 left-0 w-2 h-full bg-rose-500 rounded-l-2xl opacity-40 group-hover:opacity-100 transition-opacity' />
             <h3 className='text-xs font-semibold uppercase tracking-wider text-gray-400'>
               Critical Stock Alerts
             </h3>
-            <p className='text-4xl font-black text-rose-500 mt-2 tracking-tight'>
+            <p
+              className={`text-4xl font-black mt-2 tracking-tight ${
+                data.lowStockCount > 0
+                  ? 'text-rose-500 drop-shadow-[0_0_12px_rgba(239,68,68,0.2)]'
+                  : 'text-white'
+              }`}
+            >
               {data.lowStockCount}
             </p>
           </div>
@@ -162,11 +206,11 @@ const Dashboard = () => {
 
         {/* Dynamic Recharts Analytical Graphics Arrays */}
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-          <div className='bg-[#161b22]/40 backdrop-blur-md border border-gray-800 rounded-2xl p-6 shadow-xl'>
+          <div className='bg-[#161b22]/40 backdrop-blur-md border border-gray-800 rounded-2xl p-6 shadow-xl flex flex-col'>
             <h3 className='text-sm font-bold uppercase tracking-wider text-gray-300 mb-6'>
               Inventory Allocation Matrix
             </h3>
-            <div className='w-full h-[300px] flex items-center justify-center'>
+            <div className='w-full h-[300px] flex-1'>
               <ResponsiveContainer width='100%' height='100%'>
                 <PieChart>
                   <Pie
@@ -176,40 +220,34 @@ const Dashboard = () => {
                     cx='50%'
                     cy='50%'
                     outerRadius={90}
-                    innerRadius={50}
-                    paddingAngle={3}
-                    label={{ fill: '#9ca3af', fontSize: 11 }}
+                    innerRadius={60}
+                    paddingAngle={4}
+                    label={{ fill: '#9ca3af', fontSize: 10, fontWeight: 500 }}
                   >
                     {data.categoryStats.map((e, i) => (
                       <Cell
                         key={i}
                         fill={RADAR_COLORS[i % RADAR_COLORS.length]}
-                        stroke='#161b22'
-                        strokeWidth={2}
+                        stroke='#0d1117'
+                        strokeWidth={3}
                       />
                     ))}
                   </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#161b22',
-                      borderColor: '#374151',
-                      borderRadius: '8px',
-                      color: '#f3f4f6'
-                    }}
-                  />
+                  <Tooltip content={<CustomChartTooltip />} />
                   <Legend
-                    wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                    wrapperStyle={{ fontSize: '11px', paddingTop: '12px' }}
+                    iconType='circle'
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className='bg-[#161b22]/40 backdrop-blur-md border border-gray-800 rounded-2xl p-6 shadow-xl'>
+          <div className='bg-[#161b22]/40 backdrop-blur-md border border-gray-800 rounded-2xl p-6 shadow-xl flex flex-col'>
             <h3 className='text-sm font-bold uppercase tracking-wider text-gray-300 mb-6'>
               Purchase Orders Log Distribution
             </h3>
-            <div className='w-full h-[300px] flex items-center justify-center'>
+            <div className='w-full h-[300px] flex-1'>
               <ResponsiveContainer width='100%' height='100%'>
                 <PieChart>
                   <Pie
@@ -219,29 +257,23 @@ const Dashboard = () => {
                     cx='50%'
                     cy='50%'
                     outerRadius={90}
-                    innerRadius={50}
-                    paddingAngle={3}
-                    label={{ fill: '#9ca3af', fontSize: 11 }}
+                    innerRadius={60}
+                    paddingAngle={4}
+                    label={{ fill: '#9ca3af', fontSize: 10, fontWeight: 500 }}
                   >
                     {data.statusStats.map((e, i) => (
                       <Cell
                         key={i}
                         fill={RADAR_COLORS[(i + 2) % RADAR_COLORS.length]}
-                        stroke='#161b22'
-                        strokeWidth={2}
+                        stroke='#0d1117'
+                        strokeWidth={3}
                       />
                     ))}
                   </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#161b22',
-                      borderColor: '#374151',
-                      borderRadius: '8px',
-                      color: '#f3f4f6'
-                    }}
-                  />
+                  <Tooltip content={<CustomChartTooltip />} />
                   <Legend
-                    wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                    wrapperStyle={{ fontSize: '11px', paddingTop: '12px' }}
+                    iconType='circle'
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -255,15 +287,36 @@ const Dashboard = () => {
           <div className='bg-[#161b22]/40 backdrop-blur-md border border-gray-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between'>
             <div>
               <h3 className='text-sm font-bold uppercase tracking-wider text-gray-300 mb-4 flex items-center gap-2'>
-                <span className='w-2 h-2 rounded-full bg-rose-500 animate-pulse' />{' '}
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    data.recentLowStock.length > 0
+                      ? 'bg-rose-500 animate-pulse'
+                      : 'bg-emerald-500'
+                  }`}
+                />
                 Critical Under-Stock Alert Log
               </h3>
               {data.recentLowStock.length === 0 ? (
-                <p className='text-sm text-gray-500 py-6 text-center'>
-                  All product storage nodes within safe nominal range.
-                </p>
+                <div className='flex flex-col items-center justify-center py-12 text-center'>
+                  <svg
+                    className='w-8 h-8 text-emerald-500/40 mb-2'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth='2'
+                      d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+                    />
+                  </svg>
+                  <p className='text-xs text-gray-500'>
+                    All storage items within nominal boundaries.
+                  </p>
+                </div>
               ) : (
-                <div className='divide-y divide-gray-800/60'>
+                <div className='divide-y divide-gray-800/40'>
                   {data.recentLowStock.map((item, i) => (
                     <div
                       key={i}
@@ -273,12 +326,12 @@ const Dashboard = () => {
                         <p className='text-sm font-semibold text-gray-200 group-hover:text-rose-400 transition-colors'>
                           {item.name}
                         </p>
-                        <p className='text-xs text-gray-500'>
-                          SKU Space: {item.sku}
+                        <p className='text-xs text-gray-500 font-mono'>
+                          SKU: {item.sku}
                         </p>
                       </div>
                       <div className='text-right'>
-                        <span className='text-xs bg-rose-500/10 border border-rose-500/20 text-rose-400 px-2 py-1 rounded-md font-bold'>
+                        <span className='text-xs bg-rose-500/10 border border-rose-500/20 text-rose-400 px-2 py-1 rounded-lg font-bold font-mono'>
                           {item.qty} / {item.reorder} Left
                         </span>
                       </div>
@@ -289,60 +342,76 @@ const Dashboard = () => {
             </div>
             <Link
               to='/low-stock'
-              className='text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors pt-4 flex items-center gap-1 w-fit'
+              className='text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors pt-4 flex items-center gap-1 w-fit group'
             >
-              Access Complete Exhaustion Logs →
+              Access Complete Exhaustion Logs{' '}
+              <span className='group-hover:translate-x-1 transition-transform'>
+                →
+              </span>
             </Link>
           </div>
 
           {/* Logistics Processing Orders Matrix Table */}
-          <div className='bg-[#161b22]/40 backdrop-blur-md border border-gray-800 rounded-2xl p-6 shadow-xl overflow-hidden'>
-            <h3 className='text-sm font-bold uppercase tracking-wider text-gray-300 mb-4'>
-              Recent Logistics Operations Orders
-            </h3>
-            <div className='overflow-x-auto'>
-              <table className='min-w-full text-xs'>
-                <thead>
-                  <tr className='border-b border-gray-800 text-gray-400 font-semibold text-left'>
-                    <th className='pb-3'>PO Reference</th>
-                    <th className='pb-3'>Supplier Origin</th>
-                    <th className='pb-3 text-right'>Aggregate Cost</th>
-                    <th className='pb-3 text-center'>Status Flag</th>
-                  </tr>
-                </thead>
-                <tbody className='divide-y divide-gray-800/40'>
-                  {data.recentPurchaseOrders.map(po => (
-                    <tr
-                      key={po.poNumber}
-                      className='hover:bg-gray-800/10 transition-colors'
-                    >
-                      <td className='py-3 font-medium text-gray-300'>
-                        {po.poNumber}
-                      </td>
-                      <td className='py-3 text-gray-400'>{po.supplier}</td>
-                      <td className='py-3 text-right font-semibold text-gray-200'>
-                        Br {po.totalAmount?.toFixed(2) ?? '0.00'}
-                      </td>
-                      <td className='py-3 text-center'>
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide border ${
-                            po.status === 'RECEIVED'
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                              : po.status === 'SHIPPED'
-                              ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
-                              : po.status === 'APPROVED'
-                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                          }`}
-                        >
-                          {po.status}
-                        </span>
-                      </td>
+          <div className='bg-[#161b22]/40 backdrop-blur-md border border-gray-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between overflow-hidden'>
+            <div>
+              <h3 className='text-sm font-bold uppercase tracking-wider text-gray-300 mb-4'>
+                Recent Logistics Operations Orders
+              </h3>
+              <div className='overflow-x-auto'>
+                <table className='min-w-full text-xs'>
+                  <thead>
+                    <tr className='border-b border-gray-800 text-gray-400 font-semibold text-left uppercase tracking-wider text-[10px]'>
+                      <th className='pb-3'>PO Reference</th>
+                      <th className='pb-3'>Supplier Origin</th>
+                      <th className='pb-3 text-right'>Aggregate Cost</th>
+                      <th className='pb-3 text-center'>Status Flag</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className='divide-y divide-gray-800/30'>
+                    {data.recentPurchaseOrders.map(po => (
+                      <tr
+                        key={po.poNumber}
+                        className='hover:bg-gray-800/10 transition-colors'
+                      >
+                        <td className='py-3 font-mono font-medium text-indigo-400'>
+                          {po.poNumber}
+                        </td>
+                        <td className='py-3 text-gray-400 max-w-[120px] truncate'>
+                          {po.supplier}
+                        </td>
+                        <td className='py-3 text-right font-mono font-semibold text-gray-200'>
+                          Br {po.totalAmount?.toFixed(2) ?? '0.00'}
+                        </td>
+                        <td className='py-3 text-center'>
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-bold border font-mono ${
+                              po.status === 'RECEIVED'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : po.status === 'SHIPPED'
+                                ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
+                                : po.status === 'APPROVED'
+                                ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            }`}
+                          >
+                            {po.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
+            <Link
+              to='/purchase-orders'
+              className='text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors pt-4 flex items-center gap-1 w-fit group'
+            >
+              View Full Orders Stream{' '}
+              <span className='group-hover:translate-x-1 transition-transform'>
+                →
+              </span>
+            </Link>
           </div>
         </div>
 
@@ -351,7 +420,7 @@ const Dashboard = () => {
           <h3 className='text-sm font-bold uppercase tracking-wider text-gray-300 mb-6'>
             High Velocity Inventory Assets
           </h3>
-          <div className='overflow-x-auto rounded-xl border border-gray-800/80'>
+          <div className='overflow-x-auto rounded-xl border border-gray-800/60'>
             <table className='min-w-full text-sm divide-y divide-gray-800'>
               <thead className='bg-[#161b22]/80'>
                 <tr className='text-xs font-semibold text-gray-400 tracking-wider text-left uppercase'>
