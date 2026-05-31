@@ -3,7 +3,7 @@ import { NavLink, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { usePermissions } from '../../hooks/usePermissions'
 import {
-  FaLayout,
+  FaTh, // Replaced FaLayout with FaTh
   FaBoxOpen,
   FaTags,
   FaTruckLoading,
@@ -13,7 +13,7 @@ import {
 } from 'react-icons/fa'
 
 const NAV_ITEMS = [
-  { path: '/dashboard', label: 'Dashboard', icon: FaLayout },
+  { path: '/dashboard', label: 'Dashboard', icon: FaTh },
   { path: '/products', label: 'Products', icon: FaBoxOpen },
   { path: '/categories', label: 'Categories', icon: FaTags },
   { path: '/suppliers', label: 'Suppliers', icon: FaTruckLoading },
@@ -109,4 +109,3 @@ const Sidebar = () => {
 }
 
 export default Sidebar
-
