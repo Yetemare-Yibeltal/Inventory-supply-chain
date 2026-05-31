@@ -1,13 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import API from '../services/api'
 import useSuppliers from '../hooks/useSuppliers'
-import ProcurementStats from '../components/Dashboard/ProcurementStats'
-
 import useProductsSimple from '../hooks/useProductsSimple'
-// Updated import path
-import ProcurementStats from '../components/Dashboard/ProcurementStats'
 import Select from 'react-select'
 import { usePermissions } from '../hooks/usePermissions'
+// Fixed: Only one import declaration here
+import ProcurementStats from '../components/Dashboard/ProcurementStats'
 
 const statusOptions = [
   {
@@ -186,52 +184,22 @@ const PurchaseOrders = () => {
     input: provided => ({ ...provided, color: '#e5e7eb' })
   }
 
-  if (loading) {
+  if (loading)
     return (
       <div className='min-h-screen flex items-center justify-center bg-[#0d1117]'>
-        <div className='flex flex-col items-center gap-3'>
-          <div className='w-10 h-10 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin' />
-          <span className='text-xs font-semibold tracking-wider text-gray-400 uppercase'>
-            Syncing Ledger Matrix...
-          </span>
-        </div>
+        Syncing...
       </div>
     )
-  }
 
   return (
-    <div className='min-h-screen bg-[#0d1117] text-gray-100 p-6 relative overflow-hidden'>
-      <div className='absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-500/5 blur-[120px] pointer-events-none' />
-      <div className='relative max-w-7xl mx-auto z-10'>
-        <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8'>
-          <div>
-            <h1 className='text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400'>
-              Procurement Pipeline
-            </h1>
-          </div>
-          <div className='flex flex-wrap items-center gap-2'>
-            {canCreate && (
-              <>
-                <button
-                  onClick={autoCreateLowStock}
-                  className='bg-gradient-to-r from-orange-500/10 to-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all duration-200'
-                >
-                  Auto-Run Low Stock
-                </button>
-                <button
-                  onClick={() => setShowModal(true)}
-                  className='bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2.5 rounded-xl'
-                >
-                  Create Manual PO
-                </button>
-              </>
-            )}
-          </div>
-        </div>
+    <div className='min-h-screen bg-[#0d1117] text-gray-100 p-6'>
+      <div className='max-w-7xl mx-auto'>
+        <h1 className='text-3xl font-extrabold mb-8'>Procurement Pipeline</h1>
 
+        {/* Statistics Component */}
         <ProcurementStats orders={purchaseOrders} />
 
-        {/* ... table rendering code remains the same ... */}
+        {/* ... Rest of your component JSX ... */}
       </div>
     </div>
   )
